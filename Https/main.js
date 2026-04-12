@@ -1,6 +1,8 @@
+const fs = require('fs');
 const http = require('http');
+const path = require('path');
+const { json } = require('stream/consumers');
 let port = 3000;
-let user = [];
 function requestListener() {
     server.listen(port, () => {
         console.log('Server running at port 3000');
@@ -35,13 +37,16 @@ const server = http.createServer((req, res) => {
             console.log({ body });
             const { name, email, password } = body;
             console.log({ name, email, password });
-            const checkUserExists = user.find((u) => u.email === email);
+            const users = JSON.parse(fs.readFileSync(path.resolve('./Https/users.json'), 'utf-8'));
+            console.log({ users });
+            const checkUserExists = users.find((u) => u.email === email);
             if (checkUserExists) {
                 res.writeHead(409, { 'Content-Type': 'application/json' });
                 res.write(JSON.stringify({ error: 'User already exists' }));
                 res.end();
             } else {
-                user.push({ name, email, password, id: Date.now() });
+                users.push({ name, email, password, id: Date.now() });
+                fs.writeFileSync(path.resolve('./Https/users.json'), JSON.stringify(users), { encoding: 'utf-8' });
                 res.writeHead(201, { 'Content-Type': 'application/json' });
                 res.write(JSON.stringify({ message: 'User registered successfully' }));
                 res.end();
