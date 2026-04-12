@@ -1,0 +1,18 @@
+{
+  "name": "week4",
+  "version": "1.0.0",
+  "description": "learning node",
+  "main": "main.js",
+  "scripts": {
+    "start:dev": "node --watch main.js"
+  },
+  "keywords": [
+    "Node",
+    "js"
+  ],
+  "author": "Elsayed",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
