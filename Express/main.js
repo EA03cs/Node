@@ -70,3 +70,9 @@ app.get('/profile/:id', (req, res, next) => {
     const user = users.find(u => u.id === parseInt(req.params.id));
     user ? res.send({ message: 'User found', user }) : res.status(404).send('User not found');
 });
+app.get('/user/search', (req, res, next) => {
+    console.log(req.query);
+    const { username } = req.query;
+    const user = users.find(u => u.username === username);
+    user ? res.send({ message: 'User found', user }) : res.status(404).send('User not found');
+});
