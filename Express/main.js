@@ -23,7 +23,26 @@ app.listen(port, () => {
 // app.get('/login', (req, res, next) => {
 //     res.send('Login successful!');
 // });
-let users = [];
+let users = [
+    {
+        username: 'saaaccyed',
+        email: 'elsedt000f0@gmail.com',
+        password: 111222,
+        id: 1776010406380
+    },
+    {
+        username: 'saaaccyed',
+        email: 'elsedf0@gmail.com',
+        password: 11122,
+        id: 1776010429511
+    },
+    {
+        username: 'ddeyas',
+        email: 'elsayedatef@gmail.com',
+        password: 11122,
+        id: 1776012289200
+    }
+];
 app.use(express.json());
 app.post('/signup', (req, res, next) => {
     console.log(req.body);
@@ -33,19 +52,21 @@ app.post('/signup', (req, res, next) => {
         res.status(409).send('User already exists');
     } else {
         users.push({ username, email, password, id: Date.now() });
-        res.send('Signup successful!',users);
+        res.send('Signup successful!', users);
     }
-
-
-},
-    app.post('/login', (req, res, next) => {
-        console.log(req.body);
-        const { username, password } = req.body;
-        const user = users.find(u => u.username === username && u.password === password);
-        if (user) {
-            res.send('Login successful!', user);
-        } else {
-            res.status(404).send('User not found');
-        }
-    })
-);
+});
+app.post('/login', (req, res, next) => {
+    console.log(req.body);
+    const { username, password } = req.body;
+    const user = users.find(u => u.username === username && u.password === password);
+    if (user) {
+        res.send('Login successful!', user);
+    } else {
+        res.status(404).send('User not found');
+    }
+});
+app.get('/profile/:id', (req, res, next) => {
+    console.log(req.params);
+    const user = users.find(u => u.id === parseInt(req.params.id));
+    user ? res.send({ message: 'User found', user }) : res.status(404).send('User not found');
+});
