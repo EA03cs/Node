@@ -56,6 +56,23 @@ app.post("/auth/signup", (req, res) => {
     });
 
 });
+app.post("/auth/login", (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+    }
+    const findQuery = 'SELECT * FROM users WHERE u_email = ? AND u_password = ?';
+    connection.query(findQuery, [email, password], (err, data) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: err.message });
+        }
+        if (data.length === 0) {
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+        res.status(200).json({ "message": "Login successful", "data": data });
+    });
+});
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 }); 
