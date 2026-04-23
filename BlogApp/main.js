@@ -99,7 +99,18 @@ app.get("/user/search", (req, res) => {
         res.json({ "message": "success", "data": data });
     })
 })
-
+app.patch('/user/:id', (req, res) => {
+    const { id } = req.params;
+    const { DOB, firstName } = req.body;
+    console.log({ DOB, firstName, id });
+    const sql = 'update users set u_DOB=?,u_firstName=? where u_id=?'
+    connection.execute(sql, [DOB, firstName, id], (err, data) => {
+        if (err) {
+            res.status(500).json({ message: "internal server error" })
+        }
+        return data.affectedRows ? res.json({ message: "Done", data }) : res.status(404).json({ message: "In-valid account Id" })
+    })
+})
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 }); 
