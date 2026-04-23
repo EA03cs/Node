@@ -73,6 +73,20 @@ app.post("/auth/login", (req, res) => {
         res.status(200).json({ "message": "Login successful", "data": data });
     });
 });
+app.get('/user/:id/profile', (req, res) => {
+    const { id } = req.params;
+    const sql = 'SELECT concat(u_firstname, " ", u_middlename, " ", u_lastname) as fullName , u_email, u_id,convert(u_dob, char) as u_dob FROM users WHERE u_id = ?';
+    connection.query(sql, [id], (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+        if (data.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ "message": "success", "data": data });
+    });
+});
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 }); 
