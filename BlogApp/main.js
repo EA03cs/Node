@@ -111,6 +111,16 @@ app.patch('/user/:id', (req, res) => {
         return data.affectedRows ? res.json({ message: "Done", data }) : res.status(404).json({ message: "In-valid account Id" })
     })
 })
+app.delete('/user/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = 'delete from users where u_id=?'
+    connection.execute(sql, [id], (err, data) => {
+        if (err) {
+            res.status(500).json({ message: "internal server error" })
+        }
+        return data.affectedRows ? res.json({ message: "Done", data }) : res.status(404).json({ message: "In-valid account Id" })
+    })
+})
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 }); 
