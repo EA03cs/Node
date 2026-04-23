@@ -86,6 +86,19 @@ app.get('/user/:id/profile', (req, res) => {
         res.json({ "message": "success", "data": data });
     });
 });
+app.get("/user/search", (req, res) => {
+    const { searchKey } = req.query;
+    const sql = 'SELECT * FROM users where u_firstName like ?'
+    connection.query(sql, ["%" + searchKey + "%"], (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+        if (data.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ "message": "success", "data": data });
+    })
+})
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
