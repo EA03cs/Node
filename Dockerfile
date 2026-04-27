@@ -2,8 +2,14 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY Https/ ./Https/
+# Copy all project files
+COPY . .
 
+# Install dependencies
+RUN npm install --prefix ./Express
+
+# Expose HTTP port
 EXPOSE 3000
 
-CMD ["node", "Https/main.js"]
+# Start the application
+CMD ["node", "Express/main.js"]
