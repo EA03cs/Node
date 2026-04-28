@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Guide — دليل قواعد البيانات</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0e1117;
+    --surface:   #161b22;
+    --surface2:  #1c2333;
+    --border:    #30363d;
+    --text:      #e6edf3;
+    --muted:     #8b949e;
+    --blue:      #58a6ff;
+    --teal:      #39d353;
+    --orange:    #f78166;
+    --yellow:    #e3b341;
+    --purple:    #bc8cff;
+    --pink:      #ff7b72;
+    --code-bg:   #0d1117;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ── Layout ── */
+  .sidebar {
+    position: fixed; top: 0; right: 0;
+    width: 240px; height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px 0;
+    z-index: 100;
+  }
+
+  .sidebar-title {
+    font-size: 11px; font-weight: 700;
+    color: var(--muted); letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 0 20px 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 20px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all .15s;
+    border-right: 2px solid transparent;
+  }
+  .nav-item:hover, .nav-item.active {
+    color: var(--blue);
+    background: rgba(88,166,255,.07);
+    border-right-color: var(--blue);
+  }
+  .nav-num {
+    font-size: 10px; font-weight: 700;
+    color: var(--orange); min-width: 18px;
+  }
+
+  main {
+    margin-right: 240px;
+    max-width: 900px;
+    padding: 40px 48px 80px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1a1f35 50%, #0e1117 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    margin-bottom: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -60px; left: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(88,166,255,.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -40px; right: 60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(57,211,83,.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(88,166,255,.15);
+    border: 1px solid rgba(88,166,255,.3);
+    color: var(--blue);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-size: 42px; font-weight: 900;
+    line-height: 1.15; margin-bottom: 12px;
+    background: linear-gradient(135deg, #e6edf3, #58a6ff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p { color: var(--muted); font-size: 16px; max-width: 500px; }
+  .hero-tags {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px;
+  }
+  .tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted); font-size: 12px;
+    padding: 3px 10px; border-radius: 6px;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 56px;
+    scroll-margin-top: 24px;
+  }
+
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    display: flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 10px;
+    font-size: 14px; font-weight: 800;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: #fff; flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 22px; font-weight: 800; color: var(--text);
+  }
+
+  /* ── Prose ── */
+  p { color: var(--text); margin-bottom: 12px; }
+  .lead { font-size: 16px; color: var(--muted); margin-bottom: 20px; }
+
+  /* ── Cards ── */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .8px;
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card.danger  .card-title { color: var(--orange); border-color: rgba(247,129,102,.2); }
+  .card.success .card-title { color: var(--teal);   border-color: rgba(57,211,83,.2);  }
+  .card.info    .card-title { color: var(--blue);   border-color: rgba(88,166,255,.2); }
+  .card.warn    .card-title { color: var(--yellow); border-color: rgba(227,179,65,.2); }
+  .card.purple  .card-title { color: var(--purple); border-color: rgba(188,140,255,.2);}
+
+  .card li {
+    list-style: none; padding: 5px 0;
+    font-size: 13.5px; color: var(--text);
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .card li::before { flex-shrink: 0; margin-top: 2px; }
+  .card.danger  li::before { content: '✗'; color: var(--orange); }
+  .card.success li::before { content: '✓'; color: var(--teal);   }
+  .card.info    li::before { content: '→'; color: var(--blue);   }
+  .card.warn    li::before { content: '◆'; color: var(--yellow); }
+  .card.purple  li::before { content: '◉'; color: var(--purple); }
+
+  /* ── Table ── */
+  .tbl-wrap { overflow-x: auto; margin: 16px 0; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--surface2); }
+  th {
+    padding: 11px 14px; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .7px;
+    color: var(--muted); text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px; font-size: 13.5px;
+    color: var(--text); text-align: right;
+    border-bottom: 1px solid rgba(48,54,61,.5);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,.025); }
+  .tag-ddl  { color: var(--orange); font-weight: 700; font-size: 11px; background: rgba(247,129,102,.1); padding: 2px 7px; border-radius: 4px; }
+  .tag-dml  { color: var(--teal);   font-weight: 700; font-size: 11px; background: rgba(57,211,83,.1);   padding: 2px 7px; border-radius: 4px; }
+
+  /* ── Code ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+    margin: 14px 0;
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-lang {
+    font-size: 11px; font-weight: 700;
+    color: var(--muted); letter-spacing: .8px;
+    text-transform: uppercase;
+  }
+  .code-dots { display: flex; gap: 6px; }
+  .code-dots span {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .code-dots span:nth-child(1) { background: #ff5f56; }
+  .code-dots span:nth-child(2) { background: #febc2e; }
+  .code-dots span:nth-child(3) { background: #28c840; }
+  pre {
+    padding: 16px 18px; overflow-x: auto;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px; line-height: 1.7;
+    direction: ltr; text-align: left;
+  }
+  /* Syntax highlighting */
+  .kw  { color: #ff7b72; }
+  .fn  { color: #d2a8ff; }
+  .str { color: #a5d6ff; }
+  .num { color: #79c0ff; }
+  .cm  { color: #8b949e; font-style: italic; }
+  .tbl { color: #ffa657; }
+  .col { color: #e6edf3; }
+  .op  { color: #ff7b72; }
+
+  /* ── Example label ── */
+  .example-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 700;
+    color: var(--yellow); letter-spacing: .5px;
+    margin: 20px 0 6px;
+  }
+  .example-label::before {
+    content: '';
+    display: inline-block; width: 3px; height: 16px;
+    background: var(--yellow); border-radius: 2px; flex-shrink: 0;
+  }
+
+  /* ── Callout ── */
+  .callout {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 14px 16px; border-radius: 10px;
+    margin: 14px 0; font-size: 14px;
+  }
+  .callout.note   { background: rgba(88,166,255,.08);  border: 1px solid rgba(88,166,255,.2);  color: #a5d6ff; }
+  .callout.tip    { background: rgba(57,211,83,.08);   border: 1px solid rgba(57,211,83,.2);   color: #7ee787; }
+  .callout.warn   { background: rgba(227,179,65,.08);  border: 1px solid rgba(227,179,65,.2);  color: #e3b341; }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── Steps ── */
+  .steps { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+  .step {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .step-num {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal), var(--blue));
+    font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .step-text { font-size: 14px; color: var(--text); }
+  .step-text strong { color: var(--teal); }
+
+  /* ── Lifecycle ── */
+  .lifecycle { display: flex; flex-direction: column; gap: 3px; margin: 16px 0; }
+  .lc-item {
+    display: flex; align-items: stretch; gap: 0;
+    border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .lc-num {
+    display: flex; align-items: center; justify-content: center;
+    width: 42px; font-size: 15px; font-weight: 800;
+    color: #fff; flex-shrink: 0;
+  }
+  .lc-body { padding: 12px 16px; flex: 1; }
+  .lc-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .lc-desc  { font-size: 13px; color: var(--muted); }
+
+  /* ── TOC ── */
+  .toc {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin: 20px 0;
+  }
+  .toc-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none; color: var(--text);
+    font-size: 13.5px;
+    transition: all .15s;
+  }
+  .toc-item:hover {
+    border-color: var(--blue);
+    background: rgba(88,166,255,.06);
+    color: var(--blue);
+  }
+  .toc-n {
+    font-size: 11px; font-weight: 800;
+    color: var(--orange); min-width: 22px;
+  }
+
+  /* ── Comparison 3-col ── */
+  .cmp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
+  .cmp-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  .cmp-head {
+    padding: 10px 14px; font-size: 12px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .8px;
+    text-align: center;
+  }
+  .cmp-body { padding: 12px 14px; }
+  .cmp-body li {
+    list-style: none; font-size: 13px;
+    color: var(--muted); padding: 4px 0;
+    border-bottom: 1px solid rgba(48,54,61,.5);
+  }
+  .cmp-body li:last-child { border-bottom: none; }
+  .good { color: var(--teal) !important; }
+  .bad  { color: var(--orange) !important; }
+  .mid  { color: var(--yellow) !important; }
+
+  /* ── Keys grid ── */
+  .keys-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+  .key-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .key-name {
+    font-size: 12px; font-weight: 800; letter-spacing: .5px;
+    font-family: 'Fira Code', monospace; margin-bottom: 6px;
+  }
+  .key-desc { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+  .key-ex   { font-size: 12px; color: var(--yellow); font-family: 'Fira Code', monospace; }
+
+  /* ── Mapping rules ── */
+  .rule {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .rule-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .rule-badge {
+    font-size: 11px; font-weight: 800;
+    background: var(--blue); color: #fff;
+    padding: 2px 8px; border-radius: 4px;
+  }
+  .rule-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .rule-body { padding: 12px 16px; }
+  .rule-desc { font-size: 13.5px; color: var(--muted); margin-bottom: 10px; }
+
+  /* ── Section divider ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+    margin: 40px 0;
+  }
+
+  /* ── Print ── */
+  @media print {
+    .sidebar { display: none; }
+    main { margin-right: 0; }
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    main { margin-right: 0; padding: 20px; }
+    .cards, .toc, .cmp-grid, .keys-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-title">المحتويات</div>
+  <a class="nav-item" href="#s1"><span class="nav-num">١</span>ليه DB وليس File System</a>
+  <a class="nav-item" href="#s2"><span class="nav-num">٢</span>إيه هو الـ Database</a>
+  <a class="nav-item" href="#s3"><span class="nav-num">٣</span>SQL vs NoSQL</a>
+  <a class="nav-item" href="#s4"><span class="nav-num">٤</span>مزايا وعيوب</a>
+  <a class="nav-item" href="#s5"><span class="nav-num">٥</span>DB Life Cycle</a>
+  <a class="nav-item" href="#s6"><span class="nav-num">٦</span>ER Model & Keys</a>
+  <a class="nav-item" href="#s7"><span class="nav-num">٧</span>رموز الـ ERD</a>
+  <a class="nav-item" href="#s8"><span class="nav-num">٨</span>الـ Mapping</a>
+  <a class="nav-item" href="#s9"><span class="nav-num">٩</span>DDL</a>
+  <a class="nav-item" href="#s10"><span class="nav-num">١٠</span>DML</a>
+  <a class="nav-item" href="#s11"><span class="nav-num">١١</span>XAMPP & GUI</a>
+</nav>
+
+<!-- ════════════════ MAIN ════════════════ -->
+<main>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Database Complete Guide</div>
+  <h1>دليل قواعد البيانات</h1>
+  <p>شرح شامل من الصفر للاحتراف — بالعربي مع أمثلة عملية كتير</p>
+  <div class="hero-tags">
+    <span class="tag">ER Model</span>
+    <span class="tag">ERD</span>
+    <span class="tag">Mapping</span>
+    <span class="tag">DDL</span>
+    <span class="tag">DML</span>
+    <span class="tag">SQL</span>
+    <span class="tag">XAMPP</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <a class="toc-item" href="#s1"><span class="toc-n">١</span>ليه DB وليس File System؟</a>
+  <a class="toc-item" href="#s2"><span class="toc-n">٢</span>إيه هو الـ Database؟</a>
+  <a class="toc-item" href="#s3"><span class="toc-n">٣</span>أنواع الـ Databases</a>
+  <a class="toc-item" href="#s4"><span class="toc-n">٤</span>مزايا وعيوب</a>
+  <a class="toc-item" href="#s5"><span class="toc-n">٥</span>DB Life Cycle</a>
+  <a class="toc-item" href="#s6"><span class="toc-n">٦</span>ER Model & Keys</a>
+  <a class="toc-item" href="#s7"><span class="toc-n">٧</span>رموز الـ ERD</a>
+  <a class="toc-item" href="#s8"><span class="toc-n">٨</span>الـ Mapping</a>
+  <a class="toc-item" href="#s9"><span class="toc-n">٩</span>DDL</a>
+  <a class="toc-item" href="#s10"><span class="toc-n">١٠</span>DML</a>
+  <a class="toc-item" href="#s11"><span class="toc-n">١١</span>XAMPP & GUI</a>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════
+     SECTION 1
+══════════════════════════════════════ -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <div class="section-num">١</div>
+    <div class="section-title">ليه محتاجين Database ومش File System؟</div>
+  </div>
+
+  <p class="lead">تخيل معايا إنك بتشتغل على نظام مدرسة وقررت تخزن البيانات في ملفات نصية عادية <code>.txt</code> أو <code>.json</code>...</p>
+
+  <div class="cards">
+    <div class="card danger">
+      <div class="card-title">📁 مشاكل الـ File System</div>
+      <ul>
+        <li>Data Redundancy — اسم الطالب متكرر في ملف الطلاب وملف الدرجات وملف الحضور</li>
+        <li>Data Inconsistency — لو غيرت في ملف ونسيت التاني، البيانات بتتعارض</li>
+        <li>صعوبة الـ Query — عايز تجيب الطلاب فوق 18 وشاطرين؟ كود طويل جداً</li>
+        <li>مفيش Security — الملف موجود أو مش موجود، مفيش صلاحيات</li>
+        <li>Concurrency — لو اتنين شغلوا على نفس الملف، البيانات بتتلخبط</li>
+        <li>Backup & Recovery — لو الملف اتحذف خلاص راح</li>
+      </ul>
+    </div>
+    <div class="card success">
+      <div class="card-title">🗄️ مزايا الـ Database</div>
+      <ul>
+        <li>Data Integrity — بيانات دايماً صح ومتناسقة</li>
+        <li>Security — "المحاسب يشوف المرتبات بس"</li>
+        <li>Concurrent Access — 100 مستخدم في نفس الوقت</li>
+        <li>Backup & Recovery — نظام متكامل للنسخ الاحتياطي</li>
+        <li>Query سهل — سطر SQL واحد يجيبلك أي حاجة</li>
+        <li>Reduced Redundancy — كل بيانة مرة واحدة بس</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <span>الـ File System مناسب جداً لتطبيقات بسيطة زي قراءة ملف إعدادات. لكن لما البيانات تبقى كبيرة ومترابطة، الـ Database هو الحل الوحيد.</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SECTION 2
+══════════════════════════════════════ -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <div class="section-num">٢</div>
+    <div class="section-title">إيه هو الـ Database؟</div>
+  </div>
+
+  <p class="lead">الـ Database هو <strong>مجموعة منظمة من البيانات المترابطة</strong> مخزنة بطريقة تسمح بالوصول إليها وإدارتها وتحديثها بسهولة.</p>
+
+  <div class="cards">
+    <div class="card info">
+      <div class="card-title">📦 الـ DB (قاعدة البيانات)</div>
+      <ul>
+        <li>البيانات نفسها</li>
+        <li>الجداول والمعلومات</li>
+        <li>زي الكتب في المكتبة</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <div class="card-title">⚙️ الـ DBMS (نظام الإدارة)</div>
+      <ul>
+        <li>البرنامج اللي بيدير الـ DB</li>
+        <li>MySQL, Oracle, SQL Server</li>
+        <li>زي أمين المكتبة</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>مثال عملي — بيانات الطلاب في جدول:</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>رقم الطالب</th><th>الاسم</th><th>السن</th><th>القسم</th><th>الإيميل</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>001</td><td>Mohamed Ali</td><td>20</td><td>Computer Science</td><td>mo@email.com</td></tr>
+        <tr><td>002</td><td>Ahmed Hassan</td><td>22</td><td>Information Systems</td><td>ah@email.com</td></tr>
+        <tr><td>003</td><td>Sara Omar</td><td>19</td><td>Computer Science</td><td>so@email.com</td></tr>
+        <tr><td>004</td><td>Ali Mahmoud</td><td>21</td><td>IT</td><td>al@email.com</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SECTION 3
+══════════════════════════════════════ -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <div class="section-num">٣</div>
+    <div class="section-title">أنواع الـ Databases — SQL vs NoSQL</div>
+  </div>
+
+  <div class="cards">
+    <div class="card info">
+      <div class="card-title">🗃️ SQL (Relational)</div>
+      <ul>
+        <li>البيانات في جداول منظمة</li>
+        <li>الجداول مترابطة ببعض</li>
+        <li>MySQL, PostgreSQL, Oracle</li>
+        <li>SQL Server, SQLite</li>
+        <li>مناسبة لـ: بنك، مدرسة، شركة</li>
+      </ul>
+    </div>
+    <div class="card warn">
+      <div class="card-title">📄 NoSQL (Non-Relational)</div>
+      <ul>
+        <li>البيانات بأشكال مختلفة (JSON, Key-Value)</li>
+        <li>MongoDB — بيخزن JSON Documents</li>
+        <li>Redis — بيخزن Key-Value</li>
+        <li>Cassandra — Column-based</li>
+        <li>مناسبة لـ: سوشيال ميديا، Big Data</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>متى تختار إيه؟ جدول المقارنة:</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>الاستخدام</th><th>SQL</th><th>NoSQL</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>بيانات منظمة ومترابطة</td><td class="good">✓ ممتاز</td><td class="mid">⚠ ممكن</td></tr>
+        <tr><td>سرعة القراءة والكتابة العالية</td><td class="mid">⚠ متوسط</td><td class="good">✓ ممتاز</td></tr>
+        <tr><td>بيانات كبيرة جداً (Big Data)</td><td class="mid">⚠ صعب</td><td class="good">✓ ممتاز</td></tr>
+        <tr><td>Transactions معقدة</td><td class="good">✓ ممتاز</td><td class="bad">✗ صعب</td></tr>
+        <tr><td>سهولة التعلم</td><td class="good">✓ أسهل</td><td class="mid">⚠ أصعب شوية</td></tr>
+        <tr><td>Schema ثابت</td><td class="good">✓ نعم</td><td class="mid">⚠ مرن (Schema-less)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SECTION 4
+══════════════════════════════════════ -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <div class="section-num">٤</div>
+    <div class="section-title">مزايا وعيوب الـ Database</div>
+  </div>
+
+  <div class="cards">
+    <div class="card success">
+      <div class="card-title">✅ المزايا</div>
+      <ul>
+        <li>Data Integrity — بيانات صح دايماً</li>
+        <li>Security — صلاحيات محددة لكل مستخدم</li>
+        <li>Concurrent Access — كتير مستخدمين مع بعض</li>
+        <li>Backup & Recovery — استرجاع البيانات</li>
+        <li>Data Sharing — كل الأقسام على نفس الـ DB</li>
+        <li>Reduced Redundancy — كل بيانة مرة واحدة</li>
+      </ul>
+    </div>
+    <div class="card danger">
+      <div class="card-title">❌ العيوب</div>
+      <ul>
+        <li>Cost — Oracle وSQL Server بيكلفوا فلوس</li>
+        <li>Complexity — محتاج DBA متخصص يديره</li>
+        <li>Overhead — أبطأ من File System في الحالات البسيطة</li>
+        <li>Single Point of Failure — لو الـ DB وقع، كل حاجة وقفت</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SECTION 5
+══════════════════════════════════════ -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <div class="section-num">٥</div>
+    <div class="section-title">دورة حياة الـ Database — DB Life Cycle</div>
+  </div>
+
+  <p class="lead">الـ 6 مراحل اللي بتمر بيها أي DB من الأول للآخر:</p>
+
+  <div class="lifecycle">
+    <div class="lc-item">
+      <div class="lc-num" style="background:#e94560">١</div>
+      <div class="lc-body">
+        <div class="lc-title" style="color:#f78166">Requirements Analysis — جمع المتطلبات</div>
+        <div class="lc-desc">بنتكلم مع العميل ونفهم هو عايز إيه. النتيجة: وثيقة بالمتطلبات.</div>
+      </div>
+    </div>
+    <div class="lc-item">
+      <div class="lc-num" style="background:#00b4d8">٢</div>
+      <div class="lc-body">
+        <div class="lc-title" style="color:#39d353">Conceptual Design — التصميم المفاهيمي</div>
+        <div class="lc-desc">بنرسم الـ ERD من غير ما نفكر في أي Database بالتحديد. النتيجة: الـ ERD.</div>
+      </div>
+    </div>
+    <div class="lc-item">
+      <div class="lc-num" style="background:#06d6a0">٣</div>
+      <div class="lc-body">
+        <div class="lc-title" style="color:#39d353">Logical Design (Mapping) — التصميم المنطقي</div>
+        <div class="lc-desc">بنحول الـ ERD لجداول فعلية (Tables, Columns, Keys). النتيجة: Schema بالجداول.</div>
+      </div>
+    </div>
+    <div class="lc-item">
+      <div class="lc-num" style="background:#7c3aed">٤</div>
+      <div class="lc-body">
+        <div class="lc-title" style="color:#bc8cff">Physical Design — التصميم المادي</div>
+        <div class="lc-desc">بنحدد التفاصيل التقنية: نوع البيانات، الـ Indexes، مكان التخزين.</div>
+      </div>
+    </div>
+    <div class="lc-item">
+      <div class="lc-num" style="background:#0f3460">٥</div>
+      <div class="lc-body">
+        <div class="lc-title" style="color:#58a6ff">Implementation — التنفيذ</div>
+        <div class="lc-desc">بنكتب الـ SQL ونبني الـ DB الفعلية.</div>
+      </div>
+    </div>
+    <div class="lc-item">
+      <div class="lc-num" style="background:#30363d">٦</div>
+      <div class="lc-body">
+        <div class="lc-title" style="color:#8b949e">Maintenance — الصيانة</div>
+        <div class="lc-desc">صيانة مستمرة، تحديثات، Backup، مراقبة الأداء.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SECTION 6
+══════════════════════════════════════ -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <div class="section-num">٦</div>
+    <div class="section-title">الـ ER Model وأنواع الـ Keys</div>
+  </div>
+
+  <p class="lead">الـ ER Model هو طريقة تصميم بتبين الكيانات في النظام والعلاقات بينهم.</p>
+
+  <div class="cards">
+    <div class="card info">
+      <div class="card-title">المكونات الأساسية</div>
+      <ul>
+        <li><strong>Entity</strong> — أي حاجة في الواقع: طالب، مادة، أستاذ</li>
+        <li><strong>Attribute</strong> — صفة الـ Entity: اسم، سن، عنوان</li>
+        <li><strong>Relationship</strong> — الرابط بين Entities: طالب "يسجل في" مادة</li>
+      </ul>
+    </div>
+    <div class="card warn">
+      <div class="card-title">Strong vs Weak Entity</div>
+      <ul>
+        <li><strong>Strong Entity</strong> — مستقل وعنده PK خاص بيه</li>
+        <li><strong>Weak Entity</strong> — يعتمد على Strong Entity، عنده Partial Key بس</li>
+        <li>مثال: DEPENDENT (تابع) يعتمد على EMPLOYEE</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>أنواع الـ Keys:</p>
+  <div class="keys-grid">
+    <div class="key-card">
+      <div class="key-name" style="color:#58a6ff">Primary Key (PK)</div>
+      <div class="key-desc">معرف فريد لكل صف — لازم يكون Unique ومش Null أبداً</div>
+      <div class="key-ex">مثال: Student_ID</div>
+    </div>
+    <div class="key-card">
+      <div class="key-name" style="color:#f78166">Foreign Key (FK)</div>
+      <div class="key-desc">الـ PK من جدول تاني موجود في جدول عشان يربط الجدولين</div>
+      <div class="key-ex">مثال: Dept_ID في جدول EMPLOYEE</div>
+    </div>
+    <div class="key-card">
+      <div class="key-name" style="color:#39d353">Composite Key</div>
+      <div class="key-desc">مفتاح مكون من أكتر من عمود مع بعض عشان يبقى Unique</div>
+      <div class="key-ex">مثال: (Student_ID + Course_ID)</div>
+    </div>
+    <div class="key-card">
+      <div class="key-name" style="color:#e3b341">Candidate Key</div>
+      <div class="key-desc">أي عمود ممكن يكون PK — بنختار واحد منهم يبقى الـ PK</div>
+      <div class="key-ex">مثال: الرقم القومي أو رقم الطالب</div>
+    </div>
+    <div class="key-card">
+      <div class="key-name" style="color:#bc8cff">Super Key</div>
+      <div class="key-desc">أي مجموعة أعمدة تعرف الصف بشكل فريد حتى لو فيها زيادة</div>
+      <div class="key-ex">مثال: (ID + Name) — الـ Name زيادة</div>
+    </div>
+    <div class="key-card">
+      <div class="key-name" style="color:#ff7b72">Partial Key</div>
+      <div class="key-desc">بس في Weak Entity — مش كافي لوحده يعرف الـ Entity</div>
+      <div class="key-ex">مثال: Dep_Name في DEPENDENT</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SECTION 7
+══════════════════════════════════════ -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <div class="section-num">٧</div>
+    <div class="section-title">رموز ومفاهيم الـ ERD</div>
+  </div>
+
+  <p>ملخص الرموز المستخدمة في رسم الـ ERD:</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>الشكل</th><th>الاسم</th><th>الوصف</th><th>مثال</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>[ ]</code> مستطيل</td><td>Strong Entity</td><td>كيان مستقل عنده PK خاص</td><td>STUDENT, EMPLOYEE</td></tr>
+        <tr><td><code>[[ ]]</code> مزدوج</td><td>Weak Entity</td><td>يعتمد على كيان تاني</td><td>DEPENDENT</td></tr>
+        <tr><td><code>( )</code> بيضاوي</td><td>Attribute</td><td>صفة للـ Entity</td><td>Name, Age</td></tr>
+        <tr><td><code>(__)</code> بخط تحت</td><td>Key Attribute</td><td>الـ Primary Key</td><td>Student_ID</td></tr>
+        <tr><td><code>(( ))</code> مزدوج</td><td>Multivalued Attr</td><td>ممكن يكون ليه أكتر من قيمة</td><td>Phone Numbers</td></tr>
+        <tr><td><code>(---)</code> منقط</td><td>Derived Attr</td><td>متحسب من حاجة تانية</td><td>Age من Birthdate</td></tr>
+        <tr><td><code>&lt; &gt;</code> ماسة</td><td>Relationship</td><td>علاقة بين Entities</td><td>WorksFor, Manages</td></tr>
+        <tr><td><code>&lt;&lt; &gt;&gt;</code> مزدوج</td><td>Identifying Rel</td><td>علاقة الـ Weak Entity بالـ Owner</td><td>DependentOf</td></tr>
+        <tr><td>خط واحد</td><td>Partial Participation</td><td>المشاركة اختيارية</td><td>Employee &rarr; Manages</td></tr>
+        <tr><td>خط مزدوج</td><td>Total Participation</td><td>المشاركة إجبارية</td><td>Employee &rarr; WorksFor</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:20px">أنواع العلاقات (Cardinality):</p>
+  <div class="cmp-grid">
+    <div class="cmp-card">
+      <div class="cmp-head" style="background:rgba(88,166,255,.15);color:#58a6ff">1 : 1</div>
+      <div class="cmp-body">
+        <ul>
+          <li>كل طرف مرتبط بطرف واحد بالكتير</li>
+          <li class="good">مثال: موظف يدير قسم واحد</li>
+          <li class="good">والقسم عنده مدير واحد</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cmp-card">
+      <div class="cmp-head" style="background:rgba(57,211,83,.15);color:#39d353">1 : N</div>
+      <div class="cmp-body">
+        <ul>
+          <li>طرف واحد يرتبط بكتير من الطرف التاني</li>
+          <li class="good">مثال: قسم فيه كتير موظفين</li>
+          <li class="good">كل موظف في قسم واحد بس</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cmp-card">
+      <div class="cmp-head" style="background:rgba(188,140,255,.15);color:#bc8cff">M : N</div>
+      <div class="cmp-body">
+        <ul>
+          <li>كل الطرفين يرتبطوا بكتير</li>
+          <li class="good">مثال: طالب يسجل في مواد كتير</li>
+          <li class="good">والمادة فيها طلاب كتير</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <span class="callout-icon">💡</span>
+    <span>علاقة M:N دايماً بتنتج جدول وسطي (Junction Table) في مرحلة الـ Mapping!</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SECTION 8
+══════════════════════════════════════ -->
+<section class="section" id="s8">
+  <div class="section-header">
+    <div class="section-num">٨</div>
+    <div class="section-title">الـ Mapping — تحويل ERD لجداول</div>
+  </div>
+
+  <p class="lead">الـ Mapping هو تحويل رسمة الـ ERD لجداول SQL فعلية. في 6 قواعد أساسية.</p>
+
+  <div class="rule">
+    <div class="rule-head"><span class="rule-badge">قاعدة ١</span><span class="rule-title">Strong Entity → جدول</span></div>
+    <div class="rule-body">
+      <div class="rule-desc">كل Entity بتبقى جدول. كل Attribute بيبقى عمود. الـ Key Attribute بيبقى Primary Key.</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">SQL</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- الـ ERD: EMPLOYEE (Ssn, Fname, Lname, Salary, Bdate)</span>
+<span class="cm">--         Ssn هو الـ Key Attribute</span>
+
+<span class="kw">CREATE TABLE</span> <span class="tbl">EMPLOYEE</span> (
+    <span class="col">Ssn</span>    <span class="fn">CHAR</span>(<span class="num">9</span>)       <span class="kw">PRIMARY KEY</span>,
+    <span class="col">Fname</span>  <span class="fn">VARCHAR</span>(<span class="num">30</span>)  <span class="kw">NOT NULL</span>,
+    <span class="col">Lname</span>  <span class="fn">VARCHAR</span>(<span class="num">30</span>)  <span class="kw">NOT NULL</span>,
+    <span class="col">Salary</span> <span class="fn">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>),
+    <span class="col">Bdate</span>  <span class="fn">DATE</span>
+);</pre></div>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-head"><span class="rule-badge">قاعدة ٢</span><span class="rule-title">Weak Entity → جدول + FK من الـ Owner</span></div>
+    <div class="rule-body">
+      <div class="rule-desc">بتعمل جدول وبتضيف الـ PK من الـ Owner كـ FK. الـ PK الجديد = (Partial Key + FK من الـ Owner).</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">SQL</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- الـ ERD: DEPENDENT (Dep_name, Sex, Bdate) - Weak Entity</span>
+<span class="cm">-- تابع للـ EMPLOYEE عن طريق علاقة DEPENDENTS_OF</span>
+
+<span class="kw">CREATE TABLE</span> <span class="tbl">DEPENDENT</span> (
+    <span class="col">Essn</span>      <span class="fn">CHAR</span>(<span class="num">9</span>),          <span class="cm">-- FK من EMPLOYEE</span>
+    <span class="col">Dep_name</span>  <span class="fn">VARCHAR</span>(<span class="num">30</span>),    <span class="cm">-- Partial Key</span>
+    <span class="col">Sex</span>       <span class="fn">CHAR</span>(<span class="num">1</span>),
+    <span class="col">Bdate</span>     <span class="fn">DATE</span>,
+    <span class="col">Relation</span>  <span class="fn">VARCHAR</span>(<span class="num">20</span>),
+    <span class="kw">PRIMARY KEY</span> (<span class="col">Essn</span>, <span class="col">Dep_name</span>),   <span class="cm">-- PK مركب</span>
+    <span class="kw">FOREIGN KEY</span> (<span class="col">Essn</span>) <span class="kw">REFERENCES</span> <span class="tbl">EMPLOYEE</span>(<span class="col">Ssn</span>)
+);</pre></div>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-head"><span class="rule-badge">قاعدة ٣</span><span class="rule-title">علاقة 1:1 → FK في أحد الجدولين</span></div>
+    <div class="rule-body">
+      <div class="rule-desc">الـ PK من أي جدول يتحط كـ FK في الجدول التاني. الأفضل في الجدول اللي Total Participation.</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">SQL</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- علاقة MANAGES بين EMPLOYEE و DEPARTMENT (1:1)</span>
+<span class="cm">-- كل قسم عنده مدير واحد (Total) → نحط الـ FK في DEPARTMENT</span>
+
+<span class="kw">ALTER TABLE</span> <span class="tbl">DEPARTMENT</span>
+<span class="kw">ADD COLUMN</span> <span class="col">Mgr_ssn</span>       <span class="fn">CHAR</span>(<span class="num">9</span>),      <span class="cm">-- FK المدير</span>
+<span class="kw">ADD COLUMN</span> <span class="col">Mgr_start_date</span> <span class="fn">DATE</span>,
+<span class="kw">ADD FOREIGN KEY</span> (<span class="col">Mgr_ssn</span>) <span class="kw">REFERENCES</span> <span class="tbl">EMPLOYEE</span>(<span class="col">Ssn</span>);</pre></div>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-head"><span class="rule-badge">قاعدة ٤</span><span class="rule-title">علاقة 1:N → FK في جدول طرف الـ N</span></div>
+    <div class="rule-body">
+      <div class="rule-desc">الـ PK من طرف الـ 1 بيتحط كـ FK في جدول طرف الـ N.</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">SQL</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- علاقة WORKS_FOR: قسم واحد (1) فيه موظفين كتير (N)</span>
+<span class="cm">-- نحط الـ FK (رقم القسم) في جدول EMPLOYEE جهة الـ N</span>
+
+<span class="kw">ALTER TABLE</span> <span class="tbl">EMPLOYEE</span>
+<span class="kw">ADD COLUMN</span> <span class="col">Dno</span> <span class="fn">INT</span>,
+<span class="kw">ADD FOREIGN KEY</span> (<span class="col">Dno</span>) <span class="kw">REFERENCES</span> <span class="tbl">DEPARTMENT</span>(<span class="col">Dnumber</span>);</pre></div>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-head"><span class="rule-badge">قاعدة ٥</span><span class="rule-title">علاقة M:N → جدول جديد (Junction Table)</span></div>
+    <div class="rule-body">
+      <div class="rule-desc">لازم تعمل جدول جديد. الـ PK بتاعه مركب من الـ PKs من الجدولين.</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">SQL</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- علاقة WORKS_ON: موظف (M) يشتغل على مشاريع كتير (N)</span>
+<span class="cm">-- نعمل جدول جديد WORKS_ON</span>
+
+<span class="kw">CREATE TABLE</span> <span class="tbl">WORKS_ON</span> (
+    <span class="col">Essn</span>  <span class="fn">CHAR</span>(<span class="num">9</span>),    <span class="cm">-- FK من EMPLOYEE</span>
+    <span class="col">Pno</span>   <span class="fn">INT</span>,         <span class="cm">-- FK من PROJECT</span>
+    <span class="col">Hours</span> <span class="fn">DECIMAL</span>(<span class="num">5</span>,<span class="num">1</span>),
+    <span class="kw">PRIMARY KEY</span> (<span class="col">Essn</span>, <span class="col">Pno</span>),    <span class="cm">-- PK مركب</span>
+    <span class="kw">FOREIGN KEY</span> (<span class="col">Essn</span>) <span class="kw">REFERENCES</span> <span class="tbl">EMPLOYEE</span>(<span class="col">Ssn</span>),
+    <span class="kw">FOREIGN KEY</span> (<span class="col">Pno</span>)  <span class="kw">REFERENCES</span> <span class="tbl">PROJECT</span>(<span class="col">Pnumber</span>)
+);</pre></div>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-head"><span class="rule-badge">قاعدة ٦</span><span class="rule-title">Multivalued Attribute → جدول جديد</span></div>
+    <div class="rule-body">
+      <div class="rule-desc">الـ Attribute اللي بيكون ليه أكتر من قيمة بيتحول لجدول جديد فيه الـ Attribute + الـ FK.</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">SQL</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- القسم ممكن يكون في أكتر من Location</span>
+<span class="cm">-- Locations هو Multivalued Attribute في DEPARTMENT</span>
+
+<span class="kw">CREATE TABLE</span> <span class="tbl">DEPT_LOCATIONS</span> (
+    <span class="col">Dnumber</span>   <span class="fn">INT</span>,          <span class="cm">-- FK من DEPARTMENT</span>
+    <span class="col">Dlocation</span> <span class="fn">VARCHAR</span>(<span class="num">50</span>),
+    <span class="kw">PRIMARY KEY</span> (<span class="col">Dnumber</span>, <span class="col">Dlocation</span>),
+    <span class="kw">FOREIGN KEY</span> (<span class="col">Dnumber</span>) <span class="kw">REFERENCES</span> <span class="tbl">DEPARTMENT</span>(<span class="col">Dnumber</span>)
+);</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SECTION 9 — DDL
+══════════════════════════════════════ -->
+<section class="section" id="s9">
+  <div class="section-header">
+    <div class="section-num">٩</div>
+    <div class="section-title">الـ DDL — Data Definition Language</div>
+  </div>
+
+  <p class="lead">الـ DDL بيحدد هيكل الـ Database — مش بيشتغل على البيانات نفسها. الأوامر: CREATE, ALTER, DROP, TRUNCATE.</p>
+
+  <div class="tbl-wrap" style="margin-bottom:20px">
+    <table>
+      <thead><tr><th>الأمر</th><th>الوظيفة</th></tr></thead>
+      <tbody>
+        <tr><td><code>CREATE</code></td><td>إنشاء Database أو Table</td></tr>
+        <tr><td><code>ALTER</code></td><td>تعديل هيكل جدول موجود (زيادة عمود، حذفه، تغيير نوعه)</td></tr>
+        <tr><td><code>DROP</code></td><td>حذف جدول أو Database بالكامل (البيانات + الهيكل)</td></tr>
+        <tr><td><code>TRUNCATE</code></td><td>مسح كل البيانات مع الإبقاء على هيكل الجدول</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CREATE -->
+  <div class="example-label">مثال ١ — CREATE DATABASE</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — CREATE</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- إنشاء قاعدة بيانات جديدة</span>
+<span class="kw">CREATE DATABASE</span> school;
+
+<span class="cm">-- تحديد إننا هنشتغل عليها</span>
+<span class="kw">USE</span> school;</pre></div>
+
+  <div class="example-label">مثال ٢ — CREATE TABLE بسيط</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — CREATE TABLE</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="kw">CREATE TABLE</span> <span class="tbl">students</span> (
+    <span class="col">id</span>      <span class="fn">INT</span>           <span class="kw">PRIMARY KEY</span>,
+    <span class="col">name</span>    <span class="fn">VARCHAR</span>(<span class="num">50</span>)   <span class="kw">NOT NULL</span>,
+    <span class="col">age</span>     <span class="fn">INT</span>,
+    <span class="col">email</span>   <span class="fn">VARCHAR</span>(<span class="num">100</span>)
+);</pre></div>
+
+  <div class="example-label">مثال ٣ — CREATE TABLE مع Foreign Key</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — FK Example</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- أولاً: الجدول الأساسي (Referenced Table)</span>
+<span class="kw">CREATE TABLE</span> <span class="tbl">departments</span> (
+    <span class="col">dept_id</span>   <span class="fn">INT</span>          <span class="kw">PRIMARY KEY</span>,
+    <span class="col">dept_name</span> <span class="fn">VARCHAR</span>(<span class="num">50</span>) <span class="kw">NOT NULL</span>
+);
+
+<span class="cm">-- ثانياً: الجدول اللي بيشاور عليه (Referencing Table)</span>
+<span class="kw">CREATE TABLE</span> <span class="tbl">employees</span> (
+    <span class="col">emp_id</span>   <span class="fn">INT</span>           <span class="kw">PRIMARY KEY</span> <span class="fn">AUTO_INCREMENT</span>,
+    <span class="col">emp_name</span> <span class="fn">VARCHAR</span>(<span class="num">50</span>)  <span class="kw">NOT NULL</span>,
+    <span class="col">salary</span>   <span class="fn">DECIMAL</span>(<span class="num">10</span>,<span class="num">2</span>),
+    <span class="col">dept_id</span>  <span class="fn">INT</span>,
+    <span class="kw">CONSTRAINT</span> FK_Dept <span class="kw">FOREIGN KEY</span> (<span class="col">dept_id</span>)
+              <span class="kw">REFERENCES</span> <span class="tbl">departments</span>(<span class="col">dept_id</span>)
+);</pre></div>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <span>الـ VARCHAR(50) بيحجز المساحة اللي بتحتاجها بس، أما الـ CHAR(50) بيحجز 50 حرف ثابت حتى لو كتبت 5 حروف بس.</span>
+  </div>
+
+  <!-- ALTER -->
+  <div class="example-label">مثال ٤ — ALTER TABLE (إضافة عمود)</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — ALTER</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- إضافة عمود جديد</span>
+<span class="kw">ALTER TABLE</span> <span class="tbl">students</span> <span class="kw">ADD</span> <span class="col">phone</span> <span class="fn">VARCHAR</span>(<span class="num">15</span>);
+
+<span class="cm">-- حذف عمود</span>
+<span class="kw">ALTER TABLE</span> <span class="tbl">students</span> <span class="kw">DROP COLUMN</span> <span class="col">age</span>;
+
+<span class="cm">-- تغيير حجم عمود</span>
+<span class="kw">ALTER TABLE</span> <span class="tbl">students</span> <span class="kw">MODIFY</span> <span class="col">name</span> <span class="fn">VARCHAR</span>(<span class="num">100</span>);
+
+<span class="cm">-- إعادة تسمية عمود (MySQL 8+)</span>
+<span class="kw">ALTER TABLE</span> <span class="tbl">students</span> <span class="kw">RENAME COLUMN</span> <span class="col">name</span> <span class="kw">TO</span> <span class="col">full_name</span>;</pre></div>
+
+  <!-- DROP vs TRUNCATE -->
+  <div class="example-label">مثال ٥ — DROP vs TRUNCATE</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — DROP vs TRUNCATE</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- DROP: بيمسح الجدول بالكامل (البيانات + الهيكل)</span>
+<span class="cm">-- بعدها مش هتلاقي الجدول خالص</span>
+<span class="kw">DROP TABLE</span> <span class="tbl">students</span>;
+
+<span class="cm">-- TRUNCATE: بيمسح البيانات بس والجدول يفضل موجود</span>
+<span class="kw">TRUNCATE TABLE</span> <span class="tbl">students</span>;
+
+<span class="cm">-- DROP DATABASE: حذف كل القاعدة</span>
+<span class="kw">DROP DATABASE</span> school;</pre></div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SECTION 10 — DML
+══════════════════════════════════════ -->
+<section class="section" id="s10">
+  <div class="section-header">
+    <div class="section-num">١٠</div>
+    <div class="section-title">الـ DML — Data Manipulation Language</div>
+  </div>
+
+  <p class="lead">الـ DML بيشتغل على البيانات الموجودة جوا الجداول. الأوامر: INSERT, SELECT, UPDATE, DELETE.</p>
+
+  <!-- INSERT -->
+  <div class="example-label">مثال ١ — INSERT (إضافة بيانات)</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — INSERT</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- إضافة صف كامل (لازم ترتيب القيم يطابق ترتيب الأعمدة)</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">students</span> <span class="kw">VALUES</span> (<span class="num">1</span>, <span class="str">'Mohamed Ali'</span>, <span class="num">20</span>, <span class="str">'mo@email.com'</span>);
+
+<span class="cm">-- إضافة أعمدة محددة بس</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">students</span> (<span class="col">id</span>, <span class="col">name</span>, <span class="col">age</span>)
+<span class="kw">VALUES</span> (<span class="num">2</span>, <span class="str">'Ahmed Hassan'</span>, <span class="num">22</span>);
+
+<span class="cm">-- إضافة أكتر من صف دفعة واحدة</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">students</span> (<span class="col">id</span>, <span class="col">name</span>, <span class="col">age</span>) <span class="kw">VALUES</span>
+(<span class="num">3</span>, <span class="str">'Sara Omar'</span>,    <span class="num">19</span>),
+(<span class="num">4</span>, <span class="str">'Ali Mahmoud'</span>,  <span class="num">21</span>),
+(<span class="num">5</span>, <span class="str">'Nour Karim'</span>,   <span class="num">20</span>);</pre></div>
+
+  <!-- SELECT -->
+  <div class="example-label">مثال ٢ — SELECT الأساسي</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — SELECT</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- جيب كل البيانات</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span>;
+
+<span class="cm">-- جيب أعمدة محددة بس</span>
+<span class="kw">SELECT</span> <span class="col">name</span>, <span class="col">age</span> <span class="kw">FROM</span> <span class="tbl">students</span>;
+
+<span class="cm">-- DISTINCT: شيل التكرار</span>
+<span class="kw">SELECT DISTINCT</span> <span class="col">age</span> <span class="kw">FROM</span> <span class="tbl">students</span>;
+
+<span class="cm">-- ALIAS: غير اسم العمود في العرض</span>
+<span class="kw">SELECT</span> <span class="col">name</span> <span class="kw">AS</span> <span class="str">'اسم الطالب'</span>, <span class="col">age</span> <span class="kw">AS</span> <span class="str">'العمر'</span>
+<span class="kw">FROM</span> <span class="tbl">students</span>;</pre></div>
+
+  <div class="example-label">مثال ٣ — WHERE (الفلترة)</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — WHERE</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- طلاب سنهم أكبر من 20</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span> <span class="kw">WHERE</span> <span class="col">age</span> <span class="op">></span> <span class="num">20</span>;
+
+<span class="cm">-- طالب معين برقمه</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span> <span class="kw">WHERE</span> <span class="col">id</span> <span class="op">=</span> <span class="num">1</span>;
+
+<span class="cm">-- BETWEEN: طلاب سنهم بين 18 و 22</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span> <span class="kw">WHERE</span> <span class="col">age</span> <span class="kw">BETWEEN</span> <span class="num">18</span> <span class="kw">AND</span> <span class="num">22</span>;
+
+<span class="cm">-- IN: طلاب رقمهم 1 أو 3 أو 5</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span> <span class="kw">WHERE</span> <span class="col">id</span> <span class="kw">IN</span> (<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>);
+
+<span class="cm">-- AND: طلاب سنهم > 20 وكمان email موجود</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span>
+<span class="kw">WHERE</span> <span class="col">age</span> <span class="op">></span> <span class="num">20</span> <span class="kw">AND</span> <span class="col">email</span> <span class="kw">IS NOT NULL</span>;
+
+<span class="cm">-- OR: طلاب سنهم > 22 أو اسمهم يبدأ بـ A</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span>
+<span class="kw">WHERE</span> <span class="col">age</span> <span class="op">></span> <span class="num">22</span> <span class="kw">OR</span> <span class="col">name</span> <span class="kw">LIKE</span> <span class="str">'A%'</span>;</pre></div>
+
+  <div class="example-label">مثال ٤ — LIKE (البحث بالنص)</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — LIKE</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- اسمه بيبدأ بـ M  (M%)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span> <span class="kw">WHERE</span> <span class="col">name</span> <span class="kw">LIKE</span> <span class="str">'M%'</span>;
+
+<span class="cm">-- اسمه بينتهي بـ n  (%n)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span> <span class="kw">WHERE</span> <span class="col">name</span> <span class="kw">LIKE</span> <span class="str">'%n'</span>;
+
+<span class="cm">-- اسمه فيه ali في أي مكان  (%ali%)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span> <span class="kw">WHERE</span> <span class="col">name</span> <span class="kw">LIKE</span> <span class="str">'%ali%'</span>;
+
+<span class="cm">-- _ تعني حرف واحد بالظبط</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span> <span class="kw">WHERE</span> <span class="col">name</span> <span class="kw">LIKE</span> <span class="str">'A___'</span>;
+<span class="cm">-- هيجيب أسماء من 4 حروف تبدأ بـ A</span></pre></div>
+
+  <div class="example-label">مثال ٥ — ORDER BY (الترتيب)</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — ORDER BY</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- من الأصغر للأكبر (ASC — الافتراضي)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span> <span class="kw">ORDER BY</span> <span class="col">age</span> <span class="kw">ASC</span>;
+
+<span class="cm">-- من الأكبر للأصغر (DESC)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span> <span class="kw">ORDER BY</span> <span class="col">age</span> <span class="kw">DESC</span>;
+
+<span class="cm">-- ترتيب بأكتر من عمود</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">students</span>
+<span class="kw">ORDER BY</span> <span class="col">age</span> <span class="kw">DESC</span>, <span class="col">name</span> <span class="kw">ASC</span>;</pre></div>
+
+  <div class="example-label">مثال ٦ — Aggregate Functions + GROUP BY</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — GROUP BY</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- COUNT: عدد الطلاب الكلي</span>
+<span class="kw">SELECT COUNT</span>(*) <span class="kw">AS</span> total <span class="kw">FROM</span> <span class="tbl">students</span>;
+
+<span class="cm">-- SUM: مجموع المرتبات</span>
+<span class="kw">SELECT SUM</span>(<span class="col">salary</span>) <span class="kw">FROM</span> <span class="tbl">employees</span>;
+
+<span class="cm">-- AVG: متوسط السن</span>
+<span class="kw">SELECT AVG</span>(<span class="col">age</span>) <span class="kw">AS</span> avg_age <span class="kw">FROM</span> <span class="tbl">students</span>;
+
+<span class="cm">-- MAX, MIN</span>
+<span class="kw">SELECT MAX</span>(<span class="col">salary</span>), <span class="kw">MIN</span>(<span class="col">salary</span>) <span class="kw">FROM</span> <span class="tbl">employees</span>;
+
+<span class="cm">-- GROUP BY: عدد الطلاب في كل قسم</span>
+<span class="kw">SELECT</span> <span class="col">dept_id</span>, <span class="kw">COUNT</span>(*) <span class="kw">AS</span> student_count
+<span class="kw">FROM</span> <span class="tbl">students</span>
+<span class="kw">GROUP BY</span> <span class="col">dept_id</span>;
+
+<span class="cm">-- HAVING: الأقسام اللي عندها أكتر من 5 طلاب</span>
+<span class="kw">SELECT</span> <span class="col">dept_id</span>, <span class="kw">COUNT</span>(*) <span class="kw">AS</span> cnt
+<span class="kw">FROM</span> <span class="tbl">students</span>
+<span class="kw">GROUP BY</span> <span class="col">dept_id</span>
+<span class="kw">HAVING COUNT</span>(*) <span class="op">></span> <span class="num">5</span>;</pre></div>
+
+  <div class="callout note">
+    <span class="callout-icon">💡</span>
+    <span>الفرق بين WHERE وHAVING: الـ WHERE بيفلتر الصفوف قبل الـ GROUP BY، والـ HAVING بيفلتر النتائج بعد الـ GROUP BY.</span>
+  </div>
+
+  <div class="example-label">مثال ٧ — JOIN</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — JOINs</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- INNER JOIN: جيب المشترك فقط (الطلاب اللي عندهم قسم)</span>
+<span class="kw">SELECT</span> <span class="col">s.name</span>, <span class="col">s.age</span>, <span class="col">d.dept_name</span>
+<span class="kw">FROM</span> <span class="tbl">students</span> s
+<span class="kw">INNER JOIN</span> <span class="tbl">departments</span> d <span class="kw">ON</span> <span class="col">s.dept_id</span> <span class="op">=</span> <span class="col">d.dept_id</span>;
+
+<span class="cm">-- LEFT JOIN: كل الطلاب حتى لو مش مسجلين في قسم</span>
+<span class="kw">SELECT</span> <span class="col">s.name</span>, <span class="col">d.dept_name</span>
+<span class="kw">FROM</span> <span class="tbl">students</span> s
+<span class="kw">LEFT JOIN</span> <span class="tbl">departments</span> d <span class="kw">ON</span> <span class="col">s.dept_id</span> <span class="op">=</span> <span class="col">d.dept_id</span>;
+<span class="cm">-- الطالب اللي مش في قسم هيطلع dept_name = NULL</span>
+
+<span class="cm">-- RIGHT JOIN: كل الأقسام حتى لو مفيش طلاب فيها</span>
+<span class="kw">SELECT</span> <span class="col">s.name</span>, <span class="col">d.dept_name</span>
+<span class="kw">FROM</span> <span class="tbl">students</span> s
+<span class="kw">RIGHT JOIN</span> <span class="tbl">departments</span> d <span class="kw">ON</span> <span class="col">s.dept_id</span> <span class="op">=</span> <span class="col">d.dept_id</span>;
+
+<span class="cm">-- FULL JOIN: كل حاجة من الجدولين</span>
+<span class="kw">SELECT</span> <span class="col">s.name</span>, <span class="col">d.dept_name</span>
+<span class="kw">FROM</span> <span class="tbl">students</span> s
+<span class="kw">FULL JOIN</span> <span class="tbl">departments</span> d <span class="kw">ON</span> <span class="col">s.dept_id</span> <span class="op">=</span> <span class="col">d.dept_id</span>;</pre></div>
+
+  <!-- UPDATE -->
+  <div class="example-label">مثال ٨ — UPDATE</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — UPDATE</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- تعديل سن طالب واحد</span>
+<span class="kw">UPDATE</span> <span class="tbl">students</span> <span class="kw">SET</span> <span class="col">age</span> <span class="op">=</span> <span class="num">21</span> <span class="kw">WHERE</span> <span class="col">id</span> <span class="op">=</span> <span class="num">1</span>;
+
+<span class="cm">-- تعديل أكتر من عمود في نفس الوقت</span>
+<span class="kw">UPDATE</span> <span class="tbl">students</span>
+<span class="kw">SET</span>   <span class="col">name</span>  <span class="op">=</span> <span class="str">'Mohamed Ahmed'</span>,
+      <span class="col">email</span> <span class="op">=</span> <span class="str">'new@email.com'</span>
+<span class="kw">WHERE</span> <span class="col">id</span> <span class="op">=</span> <span class="num">1</span>;
+
+<span class="cm">-- زود راتب كل موظفين القسم 2 بـ 10%</span>
+<span class="kw">UPDATE</span> <span class="tbl">employees</span>
+<span class="kw">SET</span>   <span class="col">salary</span> <span class="op">=</span> <span class="col">salary</span> <span class="op">*</span> <span class="num">1.10</span>
+<span class="kw">WHERE</span> <span class="col">dept_id</span> <span class="op">=</span> <span class="num">2</span>;</pre></div>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <span>دايماً اتأكد من الـ WHERE في الـ UPDATE — لو نسيته هيعدل كل الجدول!</span>
+  </div>
+
+  <!-- DELETE -->
+  <div class="example-label">مثال ٩ — DELETE</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — DELETE</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- حذف طالب واحد</span>
+<span class="kw">DELETE FROM</span> <span class="tbl">students</span> <span class="kw">WHERE</span> <span class="col">id</span> <span class="op">=</span> <span class="num">2</span>;
+
+<span class="cm">-- حذف بشرط</span>
+<span class="kw">DELETE FROM</span> <span class="tbl">students</span> <span class="kw">WHERE</span> <span class="col">age</span> <span class="op"><</span> <span class="num">18</span>;
+
+<span class="cm">-- حذف كل البيانات (أبطأ من TRUNCATE)</span>
+<span class="kw">DELETE FROM</span> <span class="tbl">students</span>;</pre></div>
+
+  <!-- FULL EXAMPLE -->
+  <div class="example-label">مثال ١٠ — مثال كامل من الصفر لآخر</div>
+  <div class="code-block"><div class="code-header"><span class="code-lang">SQL — Full Example</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><span class="cm">-- ══════════ 1. إنشاء قاعدة البيانات ══════════</span>
+<span class="kw">CREATE DATABASE</span> school;
+<span class="kw">USE</span> school;
+
+<span class="cm">-- ══════════ 2. إنشاء الجداول ══════════</span>
+<span class="kw">CREATE TABLE</span> <span class="tbl">departments</span> (
+    <span class="col">dept_id</span>   <span class="fn">INT</span>          <span class="kw">PRIMARY KEY</span> <span class="fn">AUTO_INCREMENT</span>,
+    <span class="col">dept_name</span> <span class="fn">VARCHAR</span>(<span class="num">50</span>) <span class="kw">NOT NULL</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="tbl">students</span> (
+    <span class="col">id</span>      <span class="fn">INT</span>          <span class="kw">PRIMARY KEY</span> <span class="fn">AUTO_INCREMENT</span>,
+    <span class="col">name</span>    <span class="fn">VARCHAR</span>(<span class="num">50</span>) <span class="kw">NOT NULL</span>,
+    <span class="col">age</span>     <span class="fn">INT</span>,
+    <span class="col">email</span>   <span class="fn">VARCHAR</span>(<span class="num">100</span>),
+    <span class="col">dept_id</span> <span class="fn">INT</span>,
+    <span class="kw">FOREIGN KEY</span> (<span class="col">dept_id</span>) <span class="kw">REFERENCES</span> <span class="tbl">departments</span>(<span class="col">dept_id</span>)
+);
+
+<span class="cm">-- ══════════ 3. إضافة بيانات ══════════</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">departments</span> (<span class="col">dept_name</span>) <span class="kw">VALUES</span>
+(<span class="str">'Computer Science'</span>), (<span class="str">'Information Systems'</span>), (<span class="str">'IT'</span>);
+
+<span class="kw">INSERT INTO</span> <span class="tbl">students</span> (<span class="col">name</span>, <span class="col">age</span>, <span class="col">email</span>, <span class="col">dept_id</span>) <span class="kw">VALUES</span>
+(<span class="str">'Mohamed Ali'</span>,   <span class="num">20</span>, <span class="str">'mo@email.com'</span>, <span class="num">1</span>),
+(<span class="str">'Ahmed Hassan'</span>,  <span class="num">22</span>, <span class="str">'ah@email.com'</span>, <span class="num">1</span>),
+(<span class="str">'Sara Omar'</span>,     <span class="num">19</span>, <span class="str">'so@email.com'</span>, <span class="num">2</span>),
+(<span class="str">'Ali Mahmoud'</span>,   <span class="num">21</span>, <span class="str">'al@email.com'</span>, <span class="num">3</span>);
+
+<span class="cm">-- ══════════ 4. استعلامات ══════════</span>
+<span class="cm">-- جيب كل الطلاب مع أسماء أقسامهم</span>
+<span class="kw">SELECT</span> <span class="col">s.name</span>, <span class="col">s.age</span>, <span class="col">d.dept_name</span>
+<span class="kw">FROM</span> <span class="tbl">students</span> s
+<span class="kw">INNER JOIN</span> <span class="tbl">departments</span> d <span class="kw">ON</span> <span class="col">s.dept_id</span> <span class="op">=</span> <span class="col">d.dept_id</span>
+<span class="kw">ORDER BY</span> <span class="col">s.age</span> <span class="kw">ASC</span>;</pre></div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SECTION 11 — XAMPP
+══════════════════════════════════════ -->
+<section class="section" id="s11">
+  <div class="section-header">
+    <div class="section-num">١١</div>
+    <div class="section-title">XAMPP و MySQL GUI</div>
+  </div>
+
+  <p class="lead">XAMPP هو برنامج بيثبت على جهازك مجموعة أدوات متكاملة دفعة واحدة.</p>
+
+  <div class="cards">
+    <div class="card info">
+      <div class="card-title">مكونات XAMPP</div>
+      <ul>
+        <li>Apache — Web Server بيشغل المواقع محلياً</li>
+        <li>MySQL — Database Server</li>
+        <li>PHP — لغة برمجة</li>
+        <li>phpMyAdmin — واجهة بصرية (GUI) من المتصفح</li>
+      </ul>
+    </div>
+    <div class="card success">
+      <div class="card-title">إيه ممكن تعمله في phpMyAdmin</div>
+      <ul>
+        <li>تنشئ Database جديدة بضغطة زر</li>
+        <li>تنشئ Tables وتضيف Columns بـ GUI</li>
+        <li>تكتب SQL Queries في تبويب SQL</li>
+        <li>تستورد وتصدر بيانات</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>خطوات التشغيل:</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">١</div>
+      <div class="step-text">نزل XAMPP من <strong>apachefriends.org</strong> واختار الإصدار المناسب لنظامك</div>
+    </div>
+    <div class="step">
+      <div class="step-num">٢</div>
+      <div class="step-text">بعد التثبيت، افتح <strong>XAMPP Control Panel</strong></div>
+    </div>
+    <div class="step">
+      <div class="step-num">٣</div>
+      <div class="step-text">اضغط <strong>Start</strong> جنب Apache وجنب MySQL — اللمبة تبقى خضراء</div>
+    </div>
+    <div class="step">
+      <div class="step-num">٤</div>
+      <div class="step-text">افتح المتصفح واكتب <strong>http://localhost/phpmyadmin</strong></div>
+    </div>
+    <div class="step">
+      <div class="step-num">٥</div>
+      <div class="step-text">من هنا تقدر تنشئ الـ DB، تعمل الجداول، وتكتب SQL مباشرة</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SUMMARY TABLE
+══════════════════════════════════════ -->
+<div class="divider"></div>
+<section class="section">
+  <div class="section-header">
+    <div class="section-num" style="background:linear-gradient(135deg,#e3b341,#f78166)">🗝</div>
+    <div class="section-title">ملخص نهائي — Quick Reference</div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>الأمر</th><th>النوع</th><th>الوظيفة</th><th>مثال سريع</th></tr></thead>
+      <tbody>
+        <tr><td><code>CREATE</code></td><td><span class="tag-ddl">DDL</span></td><td>إنشاء DB أو Table</td><td><code>CREATE TABLE x (...)</code></td></tr>
+        <tr><td><code>ALTER</code></td><td><span class="tag-ddl">DDL</span></td><td>تعديل هيكل الجدول</td><td><code>ALTER TABLE x ADD col INT</code></td></tr>
+        <tr><td><code>DROP</code></td><td><span class="tag-ddl">DDL</span></td><td>حذف جدول أو DB</td><td><code>DROP TABLE x</code></td></tr>
+        <tr><td><code>TRUNCATE</code></td><td><span class="tag-ddl">DDL</span></td><td>تفريغ الجدول</td><td><code>TRUNCATE TABLE x</code></td></tr>
+        <tr><td><code>INSERT</code></td><td><span class="tag-dml">DML</span></td><td>إضافة بيانات</td><td><code>INSERT INTO x VALUES (...)</code></td></tr>
+        <tr><td><code>SELECT</code></td><td><span class="tag-dml">DML</span></td><td>الاستعلام</td><td><code>SELECT * FROM x WHERE ...</code></td></tr>
+        <tr><td><code>UPDATE</code></td><td><span class="tag-dml">DML</span></td><td>تعديل بيانات</td><td><code>UPDATE x SET col=val WHERE ...</code></td></tr>
+        <tr><td><code>DELETE</code></td><td><span class="tag-dml">DML</span></td><td>حذف بيانات</td><td><code>DELETE FROM x WHERE ...</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<script>
+// Active nav on scroll
+const sections = document.querySelectorAll('.section[id]');
+const navItems = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const active = document.querySelector('.nav-item[href="#' + e.target.id + '"]');
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

@@ -37,16 +37,25 @@ export const searchUser = (req, res, next) => {
 };
 export const updateUser = (req, res, next) => {
     const { id } = req.params;
-    const { DOB, firstName } = req.body;
-    console.log({ DOB, firstName, id });
-    const sql = 'update users set u_DOB=?,u_firstName=? where u_id=?'
-    connection.execute(sql, [DOB, firstName, id], (err, data) => {
+    const { firstName, middleName, lastName, DOB } = req.body;
+    
+    console.log({ firstName, middleName, lastName, DOB, id });
+    
+    const sql = 'UPDATE users SET u_firstname = ?, u_middlename = ?, u_lastname = ?, u_DOB = ? WHERE u_id = ?';
+    
+    connection.execute(sql, [firstName, middleName, lastName, DOB, id], (err, data) => {
         if (err) {
-            res.status(500).json({ message: "internal server error" })
+            console.error(err);
+            return res.status(500).json({ message: "Internal server error", error: err.message });
         }
-        return data.affectedRows ? res.json({ message: "Done", data }) : res.status(404).json({ message: "In-valid account Id" })
-    })
-}
+        
+        if (data.affectedRows === 0) {
+            return res.status(404).json({ message: "Invalid account Id" });
+        }
+        
+        return res.json({ message: "Done", affectedRows: data.affectedRows });
+    });
+};
 export const deleteUser = (req, res, next) => {
     const { id } = req.params;
     const sql = 'delete from users where u_id=?'

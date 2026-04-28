@@ -3,8 +3,8 @@ import { getAllUsers, getUserById, searchUser, updateUser, deleteUser } from "./
 
 const router = Router();
 router.get('/getUsers', getAllUsers);
-router.get('/user/:id/profile', getUserById);
-router.get("/user/search", searchUser);
-router.patch('/user/:id', updateUser);
-router.delete('/user/:id', deleteUser);
+router.get('/:id/profile', getUserById);
+router.get("/search", searchUser);
+router.patch('/:id', updateUser);
+router.delete('/:id', deleteUser);
 export default router;
