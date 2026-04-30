@@ -1,68 +1,85 @@
 import connection from "../../DB/connection.db.js";
-export const getAllUsers = (req, res, next) => {
-    const sql = 'SELECT * FROM users';
-    connection.query(sql, (err, data) => {
-        if (err) {
-            return res.status(500).json({ error: 'Internal Server Error' });
-        }
-        res.json({ "message": "success", "data": data });
-    });
-};
+import { asyncHandler, HttpError } from "../../utils/http.js";
 
-export const getUserById = (req, res, next) => {
+const publicUserFields = `
+    u_id,
+    u_firstname,
+    u_middlename,
+    u_lastname,
+    u_email,
+    CONVERT(u_dob, CHAR) AS u_dob
+`;
+
+export const getAllUsers = asyncHandler(async (req, res) => {
+    const sql = `SELECT ${publicUserFields} FROM users`;
+    const [data] = await connection.execute(sql);
+
+    res.json({ message: "success", data });
+});
+
+export const getUserById = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const sql = 'SELECT concat(u_firstname, " ", u_middlename, " ", u_lastname) as fullName , u_email, u_id,convert(u_dob, char) as u_dob FROM users WHERE u_id = ?';
-    connection.query(sql, [id], (err, data) => {
-        if (err) {
-            return res.status(500).json({ error: 'Internal Server Error' });
-        }
-        if (data.length === 0) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        res.json({ "message": "success", "data": data });
-    });
-};
-export const searchUser = (req, res, next) => {
+    const sql = `
+        SELECT
+            CONCAT_WS(" ", u_firstname, u_middlename, u_lastname) AS fullName,
+            u_email,
+            u_id,
+            CONVERT(u_dob, CHAR) AS u_dob
+        FROM users
+        WHERE u_id = ?
+    `;
+    const [data] = await connection.execute(sql, [id]);
+
+    if (data.length === 0) {
+        throw new HttpError(404, 'User not found');
+    }
+
+    res.json({ message: "success", data: data[0] });
+});
+
+export const searchUser = asyncHandler(async (req, res) => {
     const { searchKey } = req.query;
-    const sql = 'SELECT * FROM users where u_firstName like ?'
-    connection.query(sql, ["%" + searchKey + "%"], (err, data) => {
-        if (err) {
-            return res.status(500).json({ error: 'Internal Server Error' });
-        }
-        if (data.length === 0) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        res.json({ "message": "success", "data": data });
-    })
-};
-export const updateUser = (req, res, next) => {
+
+    if (!searchKey) {
+        throw new HttpError(400, 'searchKey is required');
+    }
+
+    const sql = `SELECT ${publicUserFields} FROM users WHERE u_firstname LIKE ?`;
+    const [data] = await connection.execute(sql, [`%${searchKey}%`]);
+
+    if (data.length === 0) {
+        throw new HttpError(404, 'User not found');
+    }
+
+    res.json({ message: "success", data });
+});
+
+export const updateUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { firstName, middleName, lastName, DOB } = req.body;
-    
-    console.log({ firstName, middleName, lastName, DOB, id });
-    
+
+    if (!firstName || !lastName || !DOB) {
+        throw new HttpError(400, 'firstName, lastName, and DOB are required');
+    }
+
     const sql = 'UPDATE users SET u_firstname = ?, u_middlename = ?, u_lastname = ?, u_DOB = ? WHERE u_id = ?';
-    
-    connection.execute(sql, [firstName, middleName, lastName, DOB, id], (err, data) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ message: "Internal server error", error: err.message });
-        }
-        
-        if (data.affectedRows === 0) {
-            return res.status(404).json({ message: "Invalid account Id" });
-        }
-        
-        return res.json({ message: "Done", affectedRows: data.affectedRows });
-    });
-};
-export const deleteUser = (req, res, next) => {
+    const [data] = await connection.execute(sql, [firstName, middleName || null, lastName, DOB, id]);
+
+    if (data.affectedRows === 0) {
+        throw new HttpError(404, 'Invalid account Id');
+    }
+
+    return res.json({ message: "Done", affectedRows: data.affectedRows });
+});
+
+export const deleteUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const sql = 'delete from users where u_id=?'
-    connection.execute(sql, [id], (err, data) => {
-        if (err) {
-            res.status(500).json({ message: "internal server error" })
-        }
-        return data.affectedRows ? res.json({ message: "Done", data }) : res.status(404).json({ message: "In-valid account Id" })
-    })
-}
+    const sql = 'DELETE FROM users WHERE u_id = ?';
+    const [data] = await connection.execute(sql, [id]);
+
+    if (data.affectedRows === 0) {
+        throw new HttpError(404, 'Invalid account Id');
+    }
+
+    return res.json({ message: "Done", affectedRows: data.affectedRows });
+});

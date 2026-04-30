@@ -1,30 +1,37 @@
 import connection from "../../DB/connection.db.js";
+import { asyncHandler, HttpError } from "../../utils/http.js";
 
-export const createBlog = (req, res, next) => {
+export const createBlog = asyncHandler(async (req, res) => {
     const { title, content, authorId } = req.body;
-    console.log({ title, content, authorId });
-    const findId = 'select * from users where u_id=?'
-    connection.query(findId, [authorId], (err, data) => {
-        if (err) {
-            res.status(500).json({ message: "internal server error" })
-        } if (data.length === 0) {
-            return res.status(404).json({ message: "Author not found" })
-        }
-    })
-    const sql = 'insert into blogs (b_title, b_content, b_author_id) values (?, ?, ?)'
-    connection.execute(sql, [title, content, authorId], (err, data) => {
-        if (err) {
-            res.status(500).json({ message: "internal server error" })
-        }
-        return res.json({ message: "Blog created successfully", data })
-    })
-};
-export const getAllBlogs = (req, res, next) => {
-    const sql = 'select b_id, b_title, b_content, concat(u_firstname, " ", u_middlename, " ", u_lastname) as authorName from blogs join users on b_author_id=u_id'
-    connection.query(sql, (err, data) => {
-        if (err) {
-            res.status(500).json({ message: "internal server error" })
-        }
-        return res.json({ message: "Done", data })
-    })
-};
+
+    if (!title || !content || !authorId) {
+        throw new HttpError(400, 'Title, content, and authorId are required');
+    }
+
+    const findId = 'SELECT u_id FROM users WHERE u_id = ?';
+    const [authors] = await connection.execute(findId, [authorId]);
+
+    if (authors.length === 0) {
+        throw new HttpError(404, 'Author not found');
+    }
+
+    const sql = 'INSERT INTO blogs (b_title, b_content, b_author_id) VALUES (?, ?, ?)';
+    const [data] = await connection.execute(sql, [title, content, authorId]);
+
+    return res.status(201).json({ message: "Blog created successfully", data: { id: data.insertId } });
+});
+
+export const getAllBlogs = asyncHandler(async (req, res) => {
+    const sql = `
+        SELECT
+            b_id,
+            b_title,
+            b_content,
+            CONCAT_WS(" ", u_firstname, u_middlename, u_lastname) AS authorName
+        FROM blogs
+        JOIN users ON b_author_id = u_id
+    `;
+    const [data] = await connection.execute(sql);
+
+    return res.json({ message: "Done", data });
+});
