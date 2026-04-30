@@ -4,6 +4,7 @@ import { hashPassword, verifyPassword } from "../../utils/password.js";
 
 const publicUserFields = 'u_id, u_firstname, u_middlename, u_lastname, u_email, u_dob';
 
+
 export const signup = asyncHandler(async (req, res) => {
     const { firstName, middleName, lastName, email, password, confirmPassword } = req.body;
 
