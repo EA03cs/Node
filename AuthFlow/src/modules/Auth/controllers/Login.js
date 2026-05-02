@@ -1,9 +1,9 @@
-import { comparePassword } from '../utils/hash.js';
-import { generateToken } from '../utils/jwt.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
-import { successResponse } from '../utils/response.js';
-import { HttpError } from '../utils/error.js';
-import User from '../models/user.model.js';
+import { comparePassword } from '../../../utils/hash.js';
+import { generateToken } from '../../../utils/jwt.js';
+import { asyncHandler } from '../../../utils/asyncHandler.js';
+import { successResponse } from '../../../utils/response.js';
+import { HttpError } from '../../../utils/error.js';
+import User from '../../../db/models/user.model.js';
 
 export const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;

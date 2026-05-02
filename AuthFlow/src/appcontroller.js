@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import authRoutes from './modules/Auth/routes/auth.routes.js';
-import { errorHandler } from './modules/Auth/utils/errorHandler.js';
+import { errorHandler } from './utils/errorHandler.js';
 
 dotenv.config();
 
