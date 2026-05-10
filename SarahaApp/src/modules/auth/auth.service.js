@@ -2,11 +2,6 @@ import e from "express";
 import UserModel from "../../db/model/UserModel.js";
 import { asyncHandler } from "../../utils/response.js";
 
-
-
-
-
-
 export const signup = asyncHandler(async (req, res, next) => {
     const { fullName, email, password, phone } = req.body;
     console.log(body);
