@@ -5,8 +5,7 @@ import * as dbService from "../../db/service/db.service.js";
 import {successResponse,globalErrorHandler} from "../../utils/response.js";
 import bcrypt from "bcryptjs";
 import * as hashSecurity from "../../utils/security/hash.security.js";
-
-
+import jwt from "jsonwebtoken";
 export const signup = asyncHandler(async (req, res, next) => {
     const { fullName, email, password, phone } = req.body;
     console.log(req.body);
@@ -28,17 +27,20 @@ export const signup = asyncHandler(async (req, res, next) => {
 export const login =  asyncHandler(async (req, res, next) => {
         const { email, password } = req.body;
         const user = await dbService.findone({
-             model: UserModel, filter: { email },
-             select: "-password -__v"
+             model: UserModel, filter: { email }
         });
             if(!user) {
                 return globalErrorHandler(res, 404, false, 'Invalid email or password', null);
             }
-            const isPasswordValid = await hashSecurity.comparePassword(plainText = password, hashValue = user.password);
+            const isPasswordValid = await hashSecurity.comparePassword({ plainText: password, hashValue: user.password });
             if(!isPasswordValid) {
                 return globalErrorHandler(res, 401, false, 'Invalid email or password', null);
             }
-            return successResponse(res, 200, true, 'User logged in successfully', user);}
+            const token = jwt.sign({ userId: user._id, email: user.email }, "your_secret_key_here", { expiresIn: '1h' });
+            const refreshToken = jwt.sign({ userId: user._id, email: user.email }, "your_refresh_secret_key_here", { expiresIn: '7d' });
+            user.refreshToken = refreshToken;
+            await user.save();
+            return successResponse(res, 200, true, 'User logged in successfully', { user, token, refreshToken });}
 );
 
 // {
