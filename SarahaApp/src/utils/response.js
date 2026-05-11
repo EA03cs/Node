@@ -6,3 +6,18 @@ export const asyncHandler = (fn)=>{
         });
     }
 }
+
+export const successResponse = (res, statusCode, success, message, data) => {
+    res.status(statusCode).json({
+        success,
+        message,
+        data
+    })
+}
+export const globalErrorHandler = (res, statusCode, success, message, error) => {
+    res.status(statusCode).json({
+        success,
+        message,
+        error
+    })
+}
