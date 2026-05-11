@@ -15,6 +15,9 @@ export const getUserBytoken = (async (req, res , next) => {
     console.log(authorization);
     const token = authorization.replace("Bearer ", "");
     const decodedToken = jwt.verify(token, "your_secret_key_here");
+    if (!decodedToken) {
+        return globalErrorHandler(res, 401, false, 'Invalid token', null);
+    }
     console.log(decodedToken)
     const user = await dbService.findone({
         model: UserModel, filter: { _id: decodedToken.userId }
