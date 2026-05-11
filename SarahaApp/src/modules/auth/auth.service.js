@@ -3,19 +3,24 @@ import UserModel from "../../db/model/UserModel.js";
 import { asyncHandler } from "../../utils/response.js";
 import * as dbService from "../../db/service/db.service.js";
 import {successResponse,globalErrorHandler} from "../../utils/response.js";
+import bcrypt from "bcryptjs";
+import * as hashSecurity from "../../utils/security/hash.security.js";
+
 
 export const signup = asyncHandler(async (req, res, next) => {
     const { fullName, email, password, phone } = req.body;
     console.log(req.body);
+
     const checkUser = await dbService.findone({ 
      model: UserModel, filter: { email },
-     select: "-password -__v"
  });
     if(checkUser) {
         return globalErrorHandler(res, 400, false, 'Email already exists', null);
     }
+    const hashedPassword = await hashSecurity.generatehashPassword({ plainText: password, salt: 12 });
+    req.body.password = hashedPassword;
     const user =  await dbService.create({
-        model: UserModel, data: [{ fullName, email, password, phone }],
+        model: UserModel, data: [{ fullName, email, password : hashedPassword, phone }],
     });
     return successResponse(res, 201, true, 'User created successfully', user);
  },);
@@ -23,13 +28,16 @@ export const signup = asyncHandler(async (req, res, next) => {
 export const login =  asyncHandler(async (req, res, next) => {
         const { email, password } = req.body;
         const user = await dbService.findone({
-             model: UserModel, filter: { email, password },
+             model: UserModel, filter: { email },
              select: "-password -__v"
         });
             if(!user) {
                 return globalErrorHandler(res, 404, false, 'Invalid email or password', null);
             }
-            
+            const isPasswordValid = await hashSecurity.comparePassword(plainText = password, hashValue = user.password);
+            if(!isPasswordValid) {
+                return globalErrorHandler(res, 401, false, 'Invalid email or password', null);
+            }
             return successResponse(res, 200, true, 'User logged in successfully', user);}
 );
 
