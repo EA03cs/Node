@@ -7,12 +7,16 @@ import {successResponse,globalErrorHandler} from "../../utils/response.js";
 export const signup = asyncHandler(async (req, res, next) => {
     const { fullName, email, password, phone } = req.body;
     console.log(req.body);
-    const checkUser = await dbService.findone({ model: UserModel, filter: { email },select: "-password"
+    const checkUser = await dbService.findone({ 
+     model: UserModel, filter: { email },
+     select: "-password -__v"
  });
     if(checkUser) {
         return globalErrorHandler(res, 400, false, 'Email already exists', null);
     }
-    const user =  await UserModel.create({ fullName, email, password, phone });
+    const user =  await dbService.create({
+        model: UserModel, data: [{ fullName, email, password, phone }],
+    });
     return successResponse(res, 201, true, 'User created successfully', user);
  },);
 
@@ -25,6 +29,7 @@ export const login =  asyncHandler(async (req, res, next) => {
             if(!user) {
                 return globalErrorHandler(res, 404, false, 'Invalid email or password', null);
             }
+            
             return successResponse(res, 200, true, 'User logged in successfully', user);}
 );
 
