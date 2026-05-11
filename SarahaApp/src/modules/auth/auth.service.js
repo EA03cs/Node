@@ -1,28 +1,31 @@
 import e from "express";
 import UserModel from "../../db/model/UserModel.js";
 import { asyncHandler } from "../../utils/response.js";
+import * as dbService from "../../db/service/db.service.js";
+import {successResponse,globalErrorHandler} from "../../utils/response.js";
 
 export const signup = asyncHandler(async (req, res, next) => {
     const { fullName, email, password, phone } = req.body;
-    console.log(body);
-    const checkUser = UserModel.findOne({ email });
+    console.log(req.body);
+    const checkUser = await dbService.findone({ model: UserModel, filter: { email },select: "-password"
+ });
     if(checkUser) {
-        return res.status(409).json({ message: 'Email already exists' });
+        return globalErrorHandler(res, 400, false, 'Email already exists', null);
     }
-    const user = new UserModel.create([{ fullName, email, password, phone }]);
-    user.save();
-    return res.status(201).json({ message: 'User created successfully', user });
-
-},);
+    const user =  await UserModel.create({ fullName, email, password, phone });
+    return successResponse(res, 201, true, 'User created successfully', user);
+ },);
 
 export const login =  asyncHandler(async (req, res, next) => {
         const { email, password } = req.body;
-        const user = UserModel.findOne({ email , password });
+        const user = await dbService.findone({
+             model: UserModel, filter: { email, password },
+             select: "-password -__v"
+        });
             if(!user) {
-                return res.status(404).json({ message: 'invalid email or password' });
+                return globalErrorHandler(res, 404, false, 'Invalid email or password', null);
             }
-            return res.status(200).json({ message: 'Login successful', user });
-}
+            return successResponse(res, 200, true, 'User logged in successfully', user);}
 );
 
 // {

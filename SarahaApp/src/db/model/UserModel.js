@@ -39,10 +39,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    confirmEmail: {
-        type: Date,
-        default: false,
-    }
+  confirmEmail: {
+   type: Boolean,
+   default: false
+}
 }, { timestamps: true,
     toObject: { virtuals: true },
     toJSON: { virtuals: true }
