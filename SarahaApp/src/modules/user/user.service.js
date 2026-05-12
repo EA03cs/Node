@@ -6,7 +6,10 @@ import bcrypt from "bcryptjs";
 import * as hashSecurity from "../../utils/security/hash.security.js";
 import jwt from "jsonwebtoken";
 export const getAllUsers = (async (req, res , next) => {
-res.status(200).json({ message: "success", data: [] });
+    const users = await dbService.find({
+        model: UserModel, filter: {}
+    });
+    return successResponse(res, 200, true, 'Users retrieved successfully', users);
 });
 
 export const getUserBytoken = (async (req, res , next) => {
