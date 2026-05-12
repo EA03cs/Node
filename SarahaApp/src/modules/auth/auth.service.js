@@ -10,20 +10,20 @@ export const signup = asyncHandler(async (req, res, next) => {
     const { fullName, email, password, phone } = req.body;
     console.log(req.body);
 
-    const checkUser = await dbService.findone({ 
-     model: UserModel, filter: { email },
- });
-    if(checkUser) {
+    const checkUser = await dbService.findone({
+        model: UserModel, filter: { email },
+    });
+    if (checkUser) {
         return globalErrorHandler(res, 400, false, 'Email already exists', null);
     }
+
     const hashedPassword = await hashSecurity.generatehashPassword({ plainText: password, salt: 12 });
-    req.body.password = hashedPassword;
-    const user =  await dbService.create({
-        model: UserModel, data: [{ fullName, email, password : hashedPassword, phone }],
+    const user = await dbService.create({
+        model: UserModel,
+        data: { fullName, email, password: hashedPassword, phone },
     });
     return successResponse(res, 201, true, 'User created successfully', user);
  },);
-
 export const login =  asyncHandler(async (req, res, next) => {
         const { email, password } = req.body;
         const user = await dbService.findone({
